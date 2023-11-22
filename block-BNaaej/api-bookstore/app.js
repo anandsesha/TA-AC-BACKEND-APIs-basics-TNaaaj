@@ -13,6 +13,9 @@ var indexRouter = require('./routes/index');
 var { routerV1, routerV2, routerV3, routerV4 } = require('./routes/books');
 var usersRouter = require('./routes/users');
 var commentsRouter = require('./routes/comments');
+const { default: mongoose } = require('mongoose');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
 
 var app = express();
 
@@ -33,16 +36,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //session placed after cookieParser() and before accessing usersRouter below
 //Session created below
-app.use(
-  session({
-    secret: process.env.SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: 'mongodb://127.0.0.1:27017/api-bookstore',
-    }),
-  })
-);
+// app.use(
+//   session({
+//     secret: process.env.SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//     store: MongoStore.create({
+//       mongoUrl: 'mongodb://127.0.0.1:27017/api-bookstore',
+//     }),
+//   })
+// );
 
 // Express API Server routes all incoming requests to /api/xyz routes.
 
