@@ -8,8 +8,9 @@ var indexRouter = require('./routes/index');
 // API Versioning:-
 // v1 - for books
 // v2 - for books + comments added
-// v3 - for books + comments + book categories added
-var { routerV1, routerV2, routerV3 } = require('./routes/books');
+// v3 - for book categories
+// v4 - for book tags
+var { routerV1, routerV2, routerV3, routerV4 } = require('./routes/books');
 var usersRouter = require('./routes/users');
 var commentsRouter = require('./routes/comments');
 
@@ -51,6 +52,7 @@ app.use('/api/v1/books', routerV1); // router for books.js file - handles versio
 app.use('/api/v2/books', routerV2); // router for books.js file - handles version 2 (book changes handled)
 app.use('/api/v2/books/:id/comments', commentsRouter); // router for books.js file - handles version 2  (comment specific changed handled)
 app.use('/api/v3/books/categories', routerV3); // router for books.js file - handles version 3 (book categories handled)
+app.use('/api/v4/books/tags', routerV4); // router for books.js file - handles version 4 (book TAGS handled)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

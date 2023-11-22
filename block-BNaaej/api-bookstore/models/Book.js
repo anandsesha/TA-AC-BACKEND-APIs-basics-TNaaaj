@@ -11,6 +11,7 @@ var bookSchema = new Schema(
       ref: 'Comment',
     },
     categories: [{ type: String }], // Example: ['Fiction', 'Science','Adventure']
+    tags: [{ type: String }],
   },
   { timestamps: true }
 );
