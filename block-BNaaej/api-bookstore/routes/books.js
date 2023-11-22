@@ -15,7 +15,7 @@ routerV1.get('/', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+}); // Tested postman
 
 // GET /api/v1/books/:id - get single book
 routerV1.get('/:id', async (req, res, next) => {
@@ -27,18 +27,18 @@ routerV1.get('/:id', async (req, res, next) => {
     console.log(`In Catch`);
     next(`Cannot get this findByID User`);
   }
-});
+}); //Tested Postman
 
 // POST /api/v1/books - create a book
 routerV1.post('/', async (req, res, next) => {
   try {
     console.log(req.body);
     var newBook = await Book.create(req.body);
-    res.json(newBook);
+    res.json({ newBook });
   } catch (err) {
     next(`Error inserting book into MongoDB`);
   }
-});
+}); //Tested with postman
 
 // PUT /api/v1/books/:id - update a book
 routerV1.put('/:id', async (req, res) => {
@@ -59,7 +59,7 @@ routerV1.put('/:id', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-});
+}); //Tested
 
 // DELETE /api/v1/books/:id - delete a book
 routerV1.put('/:id', async (req, res) => {
@@ -78,7 +78,7 @@ routerV1.put('/:id', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-});
+}); //Tested postman - issue
 
 //-----------------------------------------------------------------------------------------//
 
