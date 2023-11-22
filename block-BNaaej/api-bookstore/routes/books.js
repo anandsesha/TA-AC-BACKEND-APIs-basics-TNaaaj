@@ -1,7 +1,8 @@
 var express = require('express');
 var routerV1 = express.Router(); // for /api/v1/books
 var routerV2 = express.Router(); // for /api/v2/books (book enhancements - added comments to books)
-var routerV3 = express.Router(); // for /api/v3/books/categories (added category)
+var routerV3 = express.Router(); // for /api/v3/books/categories (added categories in book schema)
+var routerV4 = express.Router(); //  for /api/v3/books/tags (added tags in book schema)
 const Book = require('../models/Book');
 
 // Version 1: Endpoints for Books
@@ -114,14 +115,13 @@ routerV2.get('/:id', async (req, res, next) => {
 routerV3.post('/', async (req, res, next) => {
   try {
     const { categoryName } = req.body;
+    console.log(categoryName);
 
-    // Check if the category already exists
     const existingCategory = await Book.findOne({ categories: categoryName });
     if (existingCategory) {
       return res.status(400).json({ message: 'Category already exists' });
     }
 
-    // Create a new category
     const newCategory = await Book.create({ categories: [categoryName] });
 
     res.status(201).json(newCategory.categories);
@@ -131,4 +131,186 @@ routerV3.post('/', async (req, res, next) => {
   }
 });
 
-module.exports = { routerV1, routerV2 };
+// PUT /api/v3/books/categories/:categoryId - edit a category
+routerV3.put('/:categoryId', async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    const { updatedCategoryName } = req.body;
+
+    const updatedCategory = await Book.findByIdAndUpdate(
+      categoryId,
+      { name: updatedCategoryName },
+      { new: true }
+    );
+
+    if (!updatedCategory) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    res.json(updatedCategory.name);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// DELETE /api/v3/books/categories/:categoryId - delete a category
+routerV3.delete('/:categoryId', async (req, res, next) => {
+  const { categoryId } = req.params;
+
+  try {
+    var removedCategory = await Category.findByIdAndRemove(categoryId);
+
+    if (!removedCategory) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    res.json({ message: 'Category deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /api/v3/books/categories - List all categories category
+routerV3.get('/:bookid', async (req, res, next) => {
+  const bookId = req.params.bookId;
+
+  try {
+    var book = await Book.findById(bookId);
+
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+
+    // Display the categories for the specific book
+    res.json({ categories: book.categories });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /api/v3/books/categories/:categoryName - list books by category
+routerV3.get('/:categoryName', async (req, res, next) => {
+  const categoryName = req.params.categoryName;
+
+  try {
+    var booksWithCategory = await Book.find({ categories: categoryName });
+
+    if (booksWithCategory.length === 0) {
+      return res
+        .status(404)
+        .json({ message: `No books found for category: ${categoryName}` });
+    }
+
+    res.json(booksWithCategory);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /api/v3/books/categories/count - count books for each category
+routerV3.get('/count', async (req, res, next) => {
+  try {
+    const allBooks = await Book.find();
+
+    // Count books for each category
+    const categoryCounts = allBooks.reduce((counts, book) => {
+      book.categories.forEach((category) => {
+        counts[category] = (counts[category] || 0) + 1; // (counts[category] || 0): This is a logical OR (||) expression. It checks if counts[category] is truthy. If it is, it uses that value as the current count. If it's falsy (undefined or 0), it uses 0 as a default value. This is a way to handle cases where the category hasn't been encountered before, and its count is not defined yet.
+      });
+      return counts;
+    }, {});
+
+    res.json({ categoryCounts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// This last one below has got nothing to do with category. So we wount be using routerV3 since that routes to  /api/v3/books/categories. Instead well use routerV2: /api/v3/books/
+// GET /api/v3/books/authors/:authorName - list books by author
+routerV2.get('/authors/:authorName', async (req, res, next) => {
+  try {
+    const authorName = req.params.authorName;
+
+    // Find books by the specified author
+    const booksByAuthor = await Book.find({ author: authorName });
+
+    res.json({ books: booksByAuthor });
+  } catch (error) {
+    console.error('Error listing books by author:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+//-----------------------------------------------------------------------------------------//
+// Version 4: Endpoints for Book TAGS
+
+// GET /api/v4/books/tags - list all tags
+
+routerV4.get('/', async (req, res, next) => {
+  try {
+    var allBooks = await Book.find({});
+    var alltags = allBooks.map((book) => book.tags);
+
+    // Remove duplicate tags by converting to a Set and then back to an array
+    const uniqueTags = [...new Set(allTags)];
+    res.json({ uniqueTags });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/v4/books/tags - list all tags in ascending order
+
+routerV4.get('/', async (req, res, next) => {
+  try {
+    const allBooks = await Book.find({});
+    const allTags = allBooks.flatMap((book) => book.tags);
+
+    const uniqueTags = [...new Set(allTags)];
+
+    // Sort the tags in ascending order
+    const ascendingTags = uniqueTags.sort();
+
+    res.json({ ascendingTags });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/v4/books/tags/:tag - filter books by tag
+routerV4.get('/:tag', async (req, res, next) => {
+  try {
+    const tagToFilter = req.params.tag;
+
+    // Find books that contain the specified tag
+    const filteredBooks = await Book.find({ tags: tagToFilter });
+
+    res.json({ filteredBooks });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/v4/books/tags/count - count books for each tag
+routerV4.get('/count', async (req, res, next) => {
+  try {
+    // Use the aggregation framework to group and count books by tags
+    const tagCounts = await Book.aggregate([
+      { $unwind: '$tags' }, // creates separate doc for each tag
+      { $group: { _id: '$tags', count: { $sum: 1 } } }, // groups the documents by tags and gives count for each tag document. eg.  [{ _id: 'Sci-Fi', count: 2 }, { _id: 'Adventure', count: 1 }, .....etc]
+      { $project: { _id: 0, tag: '$_id', count: 1 } }, // projects what you want
+    ]);
+
+    res.json({ tagCounts });
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = { routerV1, routerV2, routerV3, routerV4 };

@@ -34,4 +34,4 @@ v2 -> '/api/v2/books/:id/comments' - Also, a separate router added in v2 to hand
 
 v3 -> '/api/v3/books/categories' - To handle routes specific to book categories which are modeled now. No separate router file, all category code in books.js route.
 
-v4 -> '/api/v3/books/tags' -
+v4 -> '/api/v3/books/tags' - To handle routes specific to book tags which are added to schema after V3. No separate router file, all category code in books.js route.
